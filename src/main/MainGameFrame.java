@@ -29,12 +29,9 @@ public class MainGameFrame extends JFrame{
     }
 
 
-
-
-
     public static void main(String[] args) throws InterruptedException, IOException, URISyntaxException {
-        new SplashScreen();
-        //MainGameFrame gameFrame = new MainGameFrame();
+        //new SplashScreen();
+        new MainGameFrame();
     }
 
 

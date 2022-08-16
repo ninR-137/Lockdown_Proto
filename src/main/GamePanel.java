@@ -2,9 +2,13 @@ package main;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
+
+import static main.Constants.*;
 
 
 /**
@@ -12,32 +16,39 @@ import java.util.Random;
  * Contains GameLoop for the rendering and update logic
  */
 public class GamePanel extends JPanel implements Runnable{
-
-    private Random random;
-    private ArrayList<BufferedImage> sprites = new ArrayList<>();
+    public ArrayList<BufferedImage> sprites = new ArrayList<>();
+    private ArrayList<GridHandler> grids = new ArrayList<>();
     private Thread gameThread;
+    private Debug debug;
     public GamePanel(){
-        random = new Random();
-        getSprites();
-    }
+        debug = new Debug();
+        debug.getSprites(sprites);
 
 
-    private void getSprites(){
-        for(int y = 0; y < 10; y++){
-            for(int x = 0; x < 10; x++){
-                sprites.add(Constants.testAtlas.getSubimage(x*32, y*32, 32 ,32));
+        for(int x = 0; x < gridRowCount; x++){
+            for(int y = 0; y < gridColumnCount; y++){
+                grids.add(new GridHandler(x, y));
             }
         }
-    }
 
 
+        addMouseListener(new MouseAdapter(){
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                mouseX = e.getX();
+                mouseY = e.getY();
 
-    private Color getRandomColor(){
-        int r = random.nextInt(256);
-        int g = random.nextInt(256);
-        int b = random.nextInt(256);
-
-        return new Color(r,g,b);
+                for (GridHandler grid : grids) {
+                    grid.setCollision(mouseX, mouseY);
+                    if (grid.isClicked()) {
+                        int rowCount = grid.getRowCount();
+                        int columnCount = grid.getColumnCount();
+                        System.out.println("Row: " + rowCount + "| Column: " + columnCount);
+                    }
+                }
+            }
+        });
     }
 
 
@@ -73,7 +84,7 @@ public class GamePanel extends JPanel implements Runnable{
 
             //CHECKING FPS AND UPS
             if(System.currentTimeMillis() - lastTimeCheck >= 1000){
-                System.out.println("FPS: " + frames + "|" + " UPS: " + updates);
+                //System.out.println("FPS: " + frames + "|" + " UPS: " + updates);
                 frames = 0;
                 updates = 0;
                 lastTimeCheck = System.currentTimeMillis();
@@ -83,14 +94,27 @@ public class GamePanel extends JPanel implements Runnable{
 
     public void paintComponent(Graphics g){
         super.paintComponent(g);
-        for(int x = 0; x < (Constants.SCREEN_WIDTH/32) ; x++){
-            for(int y = 0; y < (Constants.SCREEN_HEIGHT/32); y++){
-                g.drawImage(sprites.get(random.nextInt(100)), 32*x, 32*y, null);
-            }
-        }
+        drawGrid(g);
+
     }
 
     public void update(){
 
+    }
+
+    private void drawGrid(Graphics g){
+        //MARGIN
+        g.drawRect(paddingSide, paddingTop, lawnWidth,lawnHeight);
+        int initY = paddingTop;
+        int initX = paddingSide;
+
+
+        //DRAW THE GRID
+        g.setColor(debug.getRandomColor());
+        for(int x = 0; x < gridRowCount; x++){
+            for(int y = 0; y < gridColumnCount; y++){
+                g.drawRect(initX + (x*gridWidth), initY + (y*gridHeight), gridWidth, gridHeight);
+            }
+        }
     }
 }
