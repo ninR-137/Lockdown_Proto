@@ -9,10 +9,12 @@ public class GridHandler {
     private int rx, ry;
     private boolean isClicked = false;
 
+    private boolean isOccupied = false;
+
     public GridHandler(int rowIndex, int columnIndex){
         this.rowCount = rowIndex + 1;
         this.columnCount = columnIndex + 1;
-        rx = paddingSide + (rowIndex * gridWidth);
+        rx = paddingLeft + (rowIndex * gridWidth);
         ry = paddingTop + (columnIndex * gridHeight);
         setCenter();
     }
@@ -20,7 +22,7 @@ public class GridHandler {
 
     //NOT YET TESTED
     private void setCenter(){
-        Xcenter = paddingSide + ((rowCount * gridWidth) - (gridWidth/2));
+        Xcenter = paddingLeft + ((rowCount * gridWidth) - (gridWidth/2));
         Ycenter = paddingTop + ((columnCount * gridHeight) - (gridHeight/2));
     }
 
@@ -34,6 +36,10 @@ public class GridHandler {
 
     public void setCollision(boolean isClicked){
         this.isClicked = isClicked;
+    }
+
+    public void setOccupied(boolean isOccupied){
+        this.isOccupied = isOccupied;
     }
 
 
@@ -56,4 +62,10 @@ public class GridHandler {
     public boolean isClicked(){
         return isClicked;
     }
+
+    public boolean isOccupied() {
+        return isOccupied;
+    }
+
+
 }
