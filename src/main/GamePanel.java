@@ -1,14 +1,18 @@
 package main;
 
 import main.Entities.Chara;
+import main.Entities.EnemyChara;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import static main.Constants.*;
 
@@ -21,12 +25,15 @@ public class GamePanel extends JPanel implements Runnable{
     public ArrayList<BufferedImage> sprites = new ArrayList<>();
     private ArrayList<GridHandler> grids = new ArrayList<>();
     private ArrayList<Chara> charas = new ArrayList<>();
+    private ArrayList<EnemyChara> enemyCharas = new ArrayList<>();
     private ArrayList<SelectorHandler> selectors = new ArrayList<>();
     private Thread gameThread;
     private Debug debug;
 
+
     private BufferedImage tempImg;
     public GamePanel(){
+        setFocusable(true);
         debug = new Debug();
         debug.getSprites(sprites);
 
@@ -40,6 +47,31 @@ public class GamePanel extends JPanel implements Runnable{
         for(int x = 0; x < 5; x++){
             selectors.add(new SelectorHandler(x));
         }
+
+
+        addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                super.keyTyped(e);
+                switch (e.getKeyChar()){
+                    case '1' ->{
+                        enemyCharas.add(new EnemyChara(1));
+                    }
+                    case '2' ->{
+                        enemyCharas.add(new EnemyChara(2));
+                    }
+                    case '3' ->{
+                        enemyCharas.add(new EnemyChara(3));
+                    }
+                    case '4' ->{
+                        enemyCharas.add(new EnemyChara(4));
+                    }
+                    case '5' ->{
+                        enemyCharas.add(new EnemyChara(5));
+                    }
+                }
+            }
+        });
 
         addMouseListener(new MouseAdapter(){
             @Override
@@ -76,7 +108,7 @@ public class GamePanel extends JPanel implements Runnable{
                                 }
                             }
                         } else {
-                            if(globalCharaID == 4) return;
+                            if(globalCharaID == 4 || globalCharaID == -1) return;
                             Chara testCharacter = new Chara(grid.getXcenter(), grid.getYcenter(), globalCharaID);
                             testCharacter.setRowColumn(rowCount, columnCount);
                             charas.add(testCharacter);
@@ -140,10 +172,46 @@ public class GamePanel extends JPanel implements Runnable{
         for (Chara chara : charas) {
             chara.render(g);
         }
+
+        for(EnemyChara enemyChara : enemyCharas){
+            enemyChara.render(g);
+        }
+        //SELECTORS
+        drawSelector(g);
+
     }
 
 
     public void update(){
+        //debug.countSeconds();
+        /*
+        for(EnemyChara enemyChara : enemyCharas){
+            enemyChara.update();
+        }
+        */
+
+        for(int i = 0; i < enemyCharas.size(); i++){
+            boolean skip = false;
+            for(Chara chara : charas){
+                boolean condition1 = chara.getBoundingX() >= enemyCharas.get(i).getPositionX();
+                boolean condition2 = chara.getColumn() == enemyCharas.get(i).getColumn();
+
+                if(condition1 && condition2) {
+                    skip = true;
+                    chara.setCollidedWithInfected(true);
+                }
+            }
+
+            if(skip) continue;
+
+            enemyCharas.get(i).updatePosition();
+            if(enemyCharas.get(i).shouldDisappear()){
+                enemyCharas.remove(i);
+                i--;
+            }
+        }
+
+
     }
 
     private void drawGrid(Graphics g){
@@ -161,10 +229,19 @@ public class GamePanel extends JPanel implements Runnable{
                 g.drawRect(initX + (x * gridWidth), initY + (y * gridHeight), gridWidth, gridHeight);
                 int Xcenter = initX + (x * gridWidth);
                 int Ycenter = initY + (y * gridHeight);
-                //g.drawImage(testField,  Xcenter, Ycenter, null);
+                switch (y){
+                    case 0 -> g.drawImage(testField,  Xcenter, Ycenter, null);
+                    case gridColumnCount - 1-> g.drawImage(testFieldBottom,  Xcenter, Ycenter, null);
+                    default -> g.drawImage(testFieldMiddle,  Xcenter, Ycenter, null);
+                }
             }
         }
 
+    }
+
+    public void drawSelector(Graphics g){
+        int initY = paddingTop;
+        int initX = paddingLeft;
         //SELECTOR
         for(int x = 0; x < 5; x++){
 

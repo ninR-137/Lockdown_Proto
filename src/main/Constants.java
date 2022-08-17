@@ -3,6 +3,8 @@ package main;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import java.io.InputStream;
 
 public class Constants {
@@ -33,6 +35,8 @@ public class Constants {
     public static BufferedImage fire;
     public static BufferedImage testField;
     public static BufferedImage SickDude;
+    public static BufferedImage testFieldMiddle;
+    public static BufferedImage testFieldBottom;
     public static MainGameFrame mgf;
     public static int mouseX, mouseY;
     public static int globalCharaID = -1;
@@ -53,8 +57,12 @@ public class Constants {
             soldier = ImageIO.read(is);
             is = mgf.getClass().getResourceAsStream("/Resources/Fire.png");
             fire = ImageIO.read(is);
-            is = mgf.getClass().getResourceAsStream("/Resources/TestField.png");
+            is = mgf.getClass().getResourceAsStream("/Resources/TestFieldTop.png");
             testField = ImageIO.read(is);
+            is = mgf.getClass().getResourceAsStream("/Resources/TestFieldMiddle.png");
+            testFieldMiddle = ImageIO.read(is);
+            is = mgf.getClass().getResourceAsStream("/Resources/TestFieldBottom.png");
+            testFieldBottom = ImageIO.read(is);
             is = mgf.getClass().getResourceAsStream("/Resources/Sickdude.png");
             SickDude = ImageIO.read(is);
 
@@ -62,5 +70,30 @@ public class Constants {
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+
+    public static BufferedImage colorImage(BufferedImage loadImg, Color color) {
+
+        //CLONE
+        ColorModel cm = loadImg.getColorModel();
+        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+        WritableRaster raster = loadImg.copyData(null);
+        BufferedImage image = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+
+        //TINT THE CLONE AND RETURN
+        for (int x = 0; x < image.getWidth(); x++) {
+            for (int y = 0; y < image.getHeight(); y++) {
+                Color pixelColor = new Color(image.getRGB(x, y), true);
+                int r = (pixelColor.getRed() + color.getRed()) / 2;
+                int g = (pixelColor.getGreen() + color.getGreen()) / 2;
+                int b = (pixelColor.getBlue() + color.getBlue()) / 2;
+                int a = pixelColor.getAlpha();
+                int rgba = (a << 24) | (r << 16) | (g << 8) | b;
+                image.setRGB(x, y, rgba);
+            }
+        }
+
+        return image;
     }
 }

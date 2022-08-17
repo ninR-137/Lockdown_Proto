@@ -21,11 +21,11 @@ public class MainGameFrame extends JFrame{
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setResizable(false);
         this.setLocationRelativeTo(null); //Center frame in screen
-        this.setVisible(true);
         gamePanel = new GamePanel();
 
         this.add(gamePanel);
         gamePanel.start();
+        this.setVisible(true);
     }
 
 
